@@ -4,12 +4,12 @@ A lock-free transactional circular queue implementation for single-producer/sing
 
 ## Building
 
-### Prerequisites
+##### Prerequisites
 
 - [premake5](https://premake.github.io/) on your PATH.
 - Visual Studio.
 
-### Instructions
+##### Instructions
 
 1. Navigate to the `support` folder.
 2. Run `open.bat` to generate and open the Visual Studio solution.
@@ -18,23 +18,18 @@ A lock-free transactional circular queue implementation for single-producer/sing
    - To run inter-process tests, go to **Solution > Properties > Configure Startup Project**, select `inter-consumer` and `inter-producer` (see screenshot below).
    - For better performance results, compile and execute the **Release** version.
 
+![VS2022 multi-project startup](multi-project-startup.jpg)
 
-
-![Screenshot of Startup Project Configuration](multi-project-startup.jpg)
-
-
-
-### Single-Process Queue (`tx_queue_sp_t`)
+## Single-Process Queue (`tx_queue_sp_t`)
 
 Process with two threads: a producer that writes to the queue and a consumer that reads from it.
 
 ```cpp
-// Create a queue used by the consumer and producer threads
+// Create a queue before we create the threads
 
 int main() {
-    // Create a 8 KiB queue
 
-    auto queue = tx_queue_sp_t (8 * 1024);
+    auto queue = tx_queue_sp_t (8 * 1024); // 8 KiB queue
     if (!queue) {
         return -1;
     }
@@ -52,18 +47,14 @@ int producer(tx_queue_sp_t& _queue) {
     ...
 
     if (auto write_op = tx_write_t(_queue)) {
-
         write_op.write(42); // the transation auto-invalidates on error
-
         ...
-
         if (some other condition) {
             write_op.invalidate();
         }
+    } // upon destruction of write_op it is commited
 
-    }
 
-    // upon destruction of write_op the data is commited
     ...
 }
 
@@ -73,23 +64,18 @@ int consumer(tx_queue_sp_t& _queue) {
     ...
 
     if (auto read_op = tx_read_t(this->queue_)) {
-
         int val;
         read_op.read(val); // the transation auto-invalidates on error
-
         ...
-
         if (some other condition) {
             write_op.invalidate();
         }
-    }
+    } // upon destruction of read_op it is commited
 ```
 
-### Multi-Process Queue (`tx_queue_mp_t`)
+## Multi-Process Queue (`tx_queue_mp_t`)
 
 Share data between two processes via shared memory. It only differs on the queue creation.
-
-
 
 ##### Producer process
 
@@ -133,3 +119,15 @@ int main() {
 
 }
 ```
+
+## Performance results
+
+on my rig: AMD Ryzen 9 5950X (16 cores), 64GB RAM, Windows 11 Pro
+
+Single-process results
+
+![SP results](sp-results.jpg)
+
+Multi-process results
+
+![MP results](mp-results.jpg)

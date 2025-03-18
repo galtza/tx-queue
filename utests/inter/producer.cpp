@@ -30,8 +30,8 @@ constexpr auto k_queue_size     = (uint64_t)8_KiB;
 auto main(int _argc, const char* _argv[]) -> int {
     // construct the shared memory object
 
-    auto share_memory_size = sizeof(qcstudio::tx_queue_status_t) + k_queue_size;
-    auto shared_memory     = qcstudio::shared_memory(L"7d6c10f2740141fa83246ab214618c6d", share_memory_size);
+    constexpr auto share_memory_size = sizeof(qcstudio::tx_queue_status_t) + k_queue_size;
+    auto           shared_memory     = qcstudio::shared_memory(L"7d6c10f2740141fa83246ab214618c6d", share_memory_size);
 
     // construct the queue directly on the shared memory (It should cover 3 cache lines; 64 * 3 = 192)
 

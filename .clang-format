@@ -1,0 +1,89 @@
+BasedOnStyle:  LLVM
+IndentWidth: 4
+
+---
+Language:             Cpp
+AccessModifierOffset: -4
+Standard:             Auto
+
+AlwaysBreakTemplateDeclarations: No                     # 
+AlignAfterOpenBracket: Align                            #
+AlignConsecutiveMacros: Consecutive                     # None
+AlignConsecutiveAssignments: Consecutive                # None
+AlignConsecutiveBitFields: Consecutive                  # None
+AlignConsecutiveDeclarations: Consecutive               # None
+AlignEscapedNewlines: Left                              # 
+AlignOperands:   AlignAfterOperator                     # Align
+AllowShortLambdasOnASingleLine: All                     # All
+AlwaysBreakBeforeMultilineStrings: true                 # false
+BreakTemplateDeclarations: Yes                          # MultiLine
+BreakBeforeBinaryOperators: NonAssignment               # None
+BreakConstructorInitializers: BeforeColon               # BeforeColon
+SpacesInAngles: Never                                   #
+SortIncludes: false                                     #
+EmptyLineAfterAccessModifier: Leave                     # All
+IndentPPDirectives: AfterHash                           #
+ColumnLimit:     0                                      # 120
+CompactNamespaces: true                                 # false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true    # false
+LineEnding: LF
+ForEachMacros:
+  - for
+  - foreach
+  - Q_FOREACH
+  - BOOST_FOREACH
+IncludeBlocks:   Regroup # Preserve
+IncludeCategories:
+  - Regex:           '.*\.generated\.h'
+    Priority:        100
+  - Regex:           '.*(PCH).*'
+    Priority:        -1
+  - Regex:           '".*"'
+    Priority:        1
+  - Regex:           '^<.*\.(h)>'
+    Priority:        3
+  - Regex:           '^<.*>'
+    Priority:        4
+IncludeIsMainRegex: '([-_](test|unittest))?$'
+IndentCaseLabels: true # false
+KeepEmptyLinesAtTheStartOfBlocks: false # true
+NamespaceIndentation: All #None
+ObjCBinPackProtocolList: Never # Auto
+PenaltyBreakBeforeFirstCallParameter: 1 # 19
+PenaltyReturnTypeOnItsOwnLine: 200 # 1000
+PointerAlignment: Left # Right
+
+RawStringFormats:
+  - Language:        Cpp
+    Delimiters:
+      - cc
+      - CC
+      - cpp
+      - Cpp
+      - CPP
+      - 'c++'
+      - 'C++'
+    CanonicalDelimiter: ''
+    BasedOnStyle:    google
+  - Language:        TextProto
+    Delimiters:
+      - pb
+      - PB
+      - proto
+      - PROTO
+    EnclosingFunctions:
+      - EqualsProto
+      - EquivToProto
+      - PARSE_PARTIAL_TEXT_PROTO
+      - PARSE_TEST_PROTO
+      - PARSE_TEXT_PROTO
+      - ParseTextOrDie
+      - ParseTextProtoOrDie
+    CanonicalDelimiter: ''
+SpaceAfterTemplateKeyword: false
+SpacesBeforeTrailingComments: 2
+TabWidth:        4
+FixNamespaceComments: true
+ShortNamespaceLines: 20
+...
+

@@ -1,0 +1,35 @@
+# Compiled Object files
+
+*.obj
+
+# Precompiled Headers
+
+*.pch
+
+# libraries
+
+*.dll
+*.lib
+
+# Vim
+
+*.swp
+*.swo
+
+# Executable and intermediate related
+
+*.exe
+
+# Windows
+
+*.aps
+
+# Visual Studio
+
+.vs
+
+# Our own folders
+
+.build
+.tmp
+.out

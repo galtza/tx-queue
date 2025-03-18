@@ -1,0 +1,6 @@
+; Download VS plugin from: https://marketplace.visualstudio.com/items?itemName=RaulRamos.RunCommandOnSaveVS2022 
+
+[PreSave]
+Commands=Edit.FormatDocument
+ExcludeExtensions=.xml|.py|.html|.clang-format|.runcommandonsave|.ini|.ui|.rc
+ExcludePaths=third-party

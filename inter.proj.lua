@@ -4,14 +4,11 @@
         "utests/inter/consumer.cpp", 
         "utests/common/*.h", 
         "utests/common/*.inl", 
-        "utests/common/*.cpp", 
         "include/*.h", 
         "include/*.inl" 
     }
 
-    filter { "configurations:debug"   } debugargs { "-t" }
-    filter { "configurations:release" } debugargs { "-t" }
-    filter {  }
+    debugargs { "-t" }
 
 project "inter-producer"                                          
     kind "ConsoleApp"                                        
@@ -19,11 +16,8 @@ project "inter-producer"
         "utests/inter/producer.cpp",
         "utests/common/*.h",
         "utests/common/*.inl",
-        "utests/common/*.cpp",
         "include/*.h",
         "include/*.inl" 
     }
 
-    filter { "configurations:debug"   } debugargs { "-t" }
-    filter { "configurations:release" } debugargs { "-t" }
-    filter {  }
+    debugargs { "-t" }

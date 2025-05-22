@@ -1,3 +1,5 @@
+#define CPY(_dest, _src, _n) memcpy(_dest, _src, _n)
+
 /*
     ====
     Base
@@ -178,10 +180,10 @@ __forceinline auto qcstudio::tx_write_t<QTYPE>::imp_write(const void* _buffer, u
 
     if ((tail_ + _size) > capacity_) {
         const auto first_chunk_size = capacity_ - tail_;
-        memcpy(storage_ + tail_, _buffer, /*                        */ first_chunk_size);
-        memcpy(storage_, /*   */ (uint8_t*)_buffer + first_chunk_size, _size - first_chunk_size);
+        CPY(storage_ + tail_, _buffer, /*                        */ first_chunk_size);
+        CPY(storage_, /*   */ (uint8_t*)_buffer + first_chunk_size, _size - first_chunk_size);
     } else {
-        memcpy(storage_ + tail_, _buffer, _size);
+        CPY(storage_ + tail_, _buffer, _size);
     }
 
     // update the tail properly
@@ -271,10 +273,10 @@ __forceinline auto qcstudio::tx_read_t<QTYPE>::imp_read(void* _buffer, uint64_t 
 
     if ((head_ + _size) > capacity_) {
         const auto first_chunk_size = capacity_ - head_;
-        memcpy(_buffer, /*                        */ storage_ + head_, first_chunk_size);
-        memcpy((uint8_t*)_buffer + first_chunk_size, storage_, /*   */ _size - first_chunk_size);
+        CPY(_buffer, /*                        */ storage_ + head_, first_chunk_size);
+        CPY((uint8_t*)_buffer + first_chunk_size, storage_, /*   */ _size - first_chunk_size);
     } else {
-        memcpy(_buffer, storage_ + head_, _size);
+        CPY(_buffer, storage_ + head_, _size);
     }
 
     // update the tail properly

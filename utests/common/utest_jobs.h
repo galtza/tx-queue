@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
+#pragma once
 
 // C++
 
@@ -51,10 +53,10 @@ namespace qcstudio {
 
         // getters
 
-        auto get_total_data() -> uint64_t;
-        auto get_duration_ns() -> int64_t;
-        auto get_transaction_attempts() -> uint64_t;
-        auto get_hash_str() -> string;
+        auto get_total_data() const -> uint64_t;
+        auto get_total_duration_ns() const -> int64_t;
+        auto get_transaction_attempts() const -> uint64_t;
+        auto get_hash_str() const -> string;
 
     protected:
         QUEUE_TYPE& queue_;
@@ -90,14 +92,14 @@ namespace qcstudio {
         // setters
 
         void set_data(const uint8_t* _src_data, uint64_t _src_data_size);
-        void set_minmax_chunk_size(int _min_chunk_size, int _max_chunk_size);
+        void set_minmax_chunk_size(uint64_t _min_chunk_size, uint64_t _max_chunk_size);
 
     private:
         virtual void run();
 
         const uint8_t* src_data_;
         uint64_t       src_data_size_;
-        int            min_chunk_size_, max_chunk_size_;
+        uint64_t       min_chunk_size_, max_chunk_size_;
     };
 
     /*

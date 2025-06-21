@@ -1,3 +1,5 @@
+// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
 // us
 
 #include "misc.h"
@@ -26,9 +28,9 @@ using namespace qcstudio;
 
 // constants
 
-constexpr auto k_sample_size    = (uint64_t)50_MiB;
-constexpr auto k_queue_size     = (uint64_t)8_KiB;
-constexpr auto k_max_chunk_size = (uint64_t)2_KiB;
+constexpr auto k_sample_size    = (uint64_t)1_GiB;
+constexpr auto k_queue_size     = (uint64_t)16_KiB;
+constexpr auto k_max_chunk_size = (uint64_t)8_KiB;
 
 // local tests
 
@@ -99,6 +101,9 @@ namespace {
         auto       producer_job = utest_job_transmit_buffer<decltype(_queue), VERIFICATION>(_queue);
         auto       consumer_job = utest_job_receive_buffer<decltype(_queue), VERIFICATION>(_queue);
 
+        // producer_job.set_core(0);
+        // consumer_job.set_core(0);
+
         producer_job.set_data(sample_data.get(), k_sample_size);
         producer_job.set_minmax_chunk_size(147, k_max_chunk_size);
         producer_job.set_start_time(start_time);
@@ -123,15 +128,15 @@ namespace {
         }
 
         cout << "\n== Stats...\n\n";
-        cout << "       data sample size: " << format_size(k_sample_size) << "\n";
-        cout << "             queue size: " << format_size(k_queue_size) << "\n";
-        cout << "         max chunk size: " << format_size(k_max_chunk_size) << "\n\n";
-        cout << "      producer duration: " << format_duration(producer_job.get_duration_ns()) << "\n";
-        cout << "      consumer duration: " << format_duration(consumer_job.get_duration_ns()) << "\n";
-        cout << "    producer throughput: " << format_throughput(k_sample_size, producer_job.get_duration_ns()) << "\n";
-        cout << "    consumer throughput: " << format_throughput(k_sample_size, consumer_job.get_duration_ns()) << "\n\n";
-        cout << "    # write re-attempts: " << dec << producer_job.get_transaction_attempts() << "\n";
-        cout << "     # read re-attempts: " << dec << consumer_job.get_transaction_attempts() << "\n";
+        cout << "          data sample size: " << format_size(k_sample_size) << "\n";
+        cout << "                queue size: " << format_size(k_queue_size) << "\n";
+        cout << "            max chunk size: " << format_size(k_max_chunk_size) << "\n\n";
+        cout << "         producer duration: " << format_duration(producer_job.get_total_duration_ns()) << "\n";
+        cout << " producer total throughput: " << format_throughput(k_sample_size, producer_job.get_total_duration_ns()) << "\n";
+        cout << "         consumer duration: " << format_duration(consumer_job.get_total_duration_ns()) << "\n";
+        cout << " consumer total throughput: " << format_throughput(k_sample_size, consumer_job.get_total_duration_ns()) << "\n";
+        cout << "       # write re-attempts: " << dec << producer_job.get_transaction_attempts() << "\n";
+        cout << "        # read re-attempts: " << dec << consumer_job.get_transaction_attempts() << "\n";
         cout << endl;
 
         if constexpr (VERIFICATION) {

@@ -1,3 +1,5 @@
+// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
 // QCStudio
 
 #include "shared-memory.h"
@@ -25,7 +27,7 @@ namespace {
 
 // constants
 
-constexpr auto k_max_chunk_size = (uint64_t)2_KiB;  // pass by param
+constexpr auto k_max_chunk_size = (uint64_t)8_KiB;  // pass by param
 
 // global data
 
@@ -90,15 +92,19 @@ namespace {
     auto transmision(tx_queue_mp_t& _queue) -> int {
         // read the start time from the queue itself and prepare the test
 
+        cout << "== Waiting for the start time..." << endl;
         auto timestamp  = uint64_t{0};
         auto start_time = time_point<high_resolution_clock, nanoseconds>{};
-        if (auto tx = tx_read_t(_queue)) {
-            tx.read(timestamp);
-            start_time = time_point<high_resolution_clock, nanoseconds>(nanoseconds(timestamp));
-        } else {
-            cout << "Error receiving the timestamp to start\n";
-            return -1;
-        }
+        do {
+            auto tx = tx_read_t(_queue);
+            if (tx) {
+                if (!tx.read(timestamp)) {
+                    this_thread::sleep_for(100ms);
+                } else {
+                    start_time = time_point<high_resolution_clock, nanoseconds>(nanoseconds(timestamp));
+                }
+            }
+        } while (timestamp == 0);
 
         auto consumer_job = utest_job_receive_buffer<tx_queue_mp_t, VERIFICATION>(_queue);
 
@@ -119,12 +125,12 @@ namespace {
         }
 
         cout << "\n== Stats...\n\n";
-        cout << "    consumer throughput: " << format_throughput(consumer_job.get_total_data(), consumer_job.get_duration_ns()) << "\n\n";
-        cout << "      consumer duration: " << format_duration(consumer_job.get_duration_ns()) << "\n";
-        cout << "       data sample size: " << format_size(consumer_job.get_total_data()) << "\n";
-        cout << "         queue capacity: " << format_size(_queue.capacity()) << "\n";
-        cout << "         max chunk size: " << format_size(k_max_chunk_size) << "\n\n";
-        cout << "     # read re-attempts: " << dec << consumer_job.get_transaction_attempts() << "\n";
+        cout << " consumer total throughput: " << format_throughput(consumer_job.get_total_data(), consumer_job.get_total_duration_ns()) << "\n\n";
+        cout << "         consumer duration: " << format_duration(consumer_job.get_total_duration_ns()) << "\n";
+        cout << "          data sample size: " << format_size(consumer_job.get_total_data()) << "\n";
+        cout << "            queue capacity: " << format_size(_queue.capacity()) << "\n";
+        cout << "            max chunk size: " << format_size(k_max_chunk_size) << "\n\n";
+        cout << "        # read re-attempts: " << dec << consumer_job.get_transaction_attempts() << "\n\n";
         cout << endl;
 
         return 0;

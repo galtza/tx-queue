@@ -1,3 +1,5 @@
+// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
 #pragma once
 
 // C++
@@ -8,6 +10,13 @@
 #include <tuple>
 #include <string>
 #include <type_traits>
+#include <thread>
+
+// windows
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <Windows.h>
 
 // preprocessor
 
@@ -51,8 +60,10 @@ namespace qcstudio {
     };
 
     struct tx_queue_status_t {
-        alignas(CACHE_LINE_SIZE) uint64_t head_;
         alignas(CACHE_LINE_SIZE) uint64_t tail_;
+        int32_t producer_core_ = -1;
+        alignas(CACHE_LINE_SIZE) uint64_t head_;
+        int32_t consumer_core_ = -1;
     };
 
     /*

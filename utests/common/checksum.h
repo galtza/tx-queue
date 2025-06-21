@@ -1,3 +1,5 @@
+// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
 #include <cstdint>
 #include <cstring>
 
@@ -26,7 +28,7 @@ namespace qcstudio::checksum {
     };
 
     void update(status_t& _status, const uint8_t* _buffer, uint64_t _size);
-    auto to_digest(status_t& _status) -> digest_t;
+    auto to_digest(const status_t& _status) -> digest_t;
     auto to_string(const digest_t& _digest) -> string;
 }
 
@@ -40,7 +42,7 @@ void qcstudio::checksum::update(qcstudio::checksum::status_t& _status, const uin
     }
 }
 
-auto qcstudio::checksum::to_digest(status_t& _status) -> qcstudio::checksum::digest_t {
+auto qcstudio::checksum::to_digest(const status_t& _status) -> qcstudio::checksum::digest_t {
     return digest_t{_status.checksum};
 }
 

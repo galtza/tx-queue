@@ -1,3 +1,10 @@
-﻿project "misc"
+﻿-- Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
+project "misc"
     kind  "None"
-    files { "premake5.lua", "*.proj.lua", ".runcommandonsave", ".clang-format", ".gitignore" }
+    files { 
+        ".clang-format", 
+        ".runcommandonsave", 
+        ".gitignore",
+        "**/*.lua.",
+    }

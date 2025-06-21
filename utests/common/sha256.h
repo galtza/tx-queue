@@ -1,3 +1,5 @@
+// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
 #include <cstdlib>
 #include <new>
 #include <array>
@@ -33,7 +35,7 @@ namespace qcstudio::sha256 {
     };
 
     void update(status_t& _status, const uint8_t* _buffer, uint64_t _size);
-    auto to_digest(status_t& _status) -> digest_t;
+    auto to_digest(const status_t& _status) -> digest_t;
     auto to_string(const digest_t& _digest) -> string;
 }
 
@@ -85,37 +87,39 @@ inline void qcstudio::sha256::update(status_t& _status, const uint8_t* _buffer, 
     }
 }
 
-inline auto qcstudio::sha256::to_digest(status_t& _status) -> qcstudio::sha256::digest_t {
+inline auto qcstudio::sha256::to_digest(const status_t& _status) -> qcstudio::sha256::digest_t {
+    auto status_copy = _status;
+
     // add end tag (there is always room for 1 byte)
 
-    _status.curr_block[_status.cur++] = 0x80;
+    status_copy.curr_block[status_copy.cur++] = 0x80;
 
     // add padding (from 0 to potentially up to 2 blocks)
 
-    if (const auto after_end_zeros = ((55 - _status.total_num_bits / 8) % 64 + 64) % 64) {
-        if (const auto remaining_in_block = 64 - _status.cur; after_end_zeros > remaining_in_block) {
-            memset(_status.curr_block + _status.cur, 0, remaining_in_block);
-            process_block(_status);
-            memset(_status.curr_block, 0, after_end_zeros - remaining_in_block);
-            _status.cur = after_end_zeros - remaining_in_block;
+    if (const auto after_end_zeros = ((55 - status_copy.total_num_bits / 8) % 64 + 64) % 64) {
+        if (const auto remaining_in_block = 64 - status_copy.cur; after_end_zeros > remaining_in_block) {
+            memset(status_copy.curr_block + status_copy.cur, 0, remaining_in_block);
+            process_block(status_copy);
+            memset(status_copy.curr_block, 0, after_end_zeros - remaining_in_block);
+            status_copy.cur = after_end_zeros - remaining_in_block;
         } else {
-            memset(&_status.curr_block[_status.cur], 0, after_end_zeros);
-            _status.cur += after_end_zeros;
+            memset(&status_copy.curr_block[status_copy.cur], 0, after_end_zeros);
+            status_copy.cur += after_end_zeros;
         }
     }
 
     // add length
 
-    *reinterpret_cast<uint64_t*>(&_status.curr_block[_status.cur]) = portable_bswap64(_status.total_num_bits);
-    process_block(_status);
+    *reinterpret_cast<uint64_t*>(&status_copy.curr_block[status_copy.cur]) = portable_bswap64(status_copy.total_num_bits);
+    process_block(status_copy);
 
     // compute/return the digest
 
     return digest_t{
-        (static_cast<uint64_t>(_status.h[0]) << 32) | _status.h[1],  // a
-        (static_cast<uint64_t>(_status.h[2]) << 32) | _status.h[3],  // b
-        (static_cast<uint64_t>(_status.h[4]) << 32) | _status.h[5],  // c
-        (static_cast<uint64_t>(_status.h[6]) << 32) | _status.h[7]   // d
+        (static_cast<uint64_t>(status_copy.h[0]) << 32) | status_copy.h[1],  // a
+        (static_cast<uint64_t>(status_copy.h[2]) << 32) | status_copy.h[3],  // b
+        (static_cast<uint64_t>(status_copy.h[4]) << 32) | status_copy.h[5],  // c
+        (static_cast<uint64_t>(status_copy.h[6]) << 32) | status_copy.h[7]   // d
     };
 }
 

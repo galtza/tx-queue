@@ -1,4 +1,4 @@
-#define CPY(_dest, _src, _n) memcpy(_dest, _src, _n)
+// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
 
 /*
     ====
@@ -6,15 +6,19 @@
     ====
 */
 
-__forceinline auto qcstudio::base_tx_queue_t::is_ok() const -> bool {
+#pragma push_macro("QCS_INLINE")
+#undef QCS_INLINE
+#define QCS_INLINE __forceinline  // __declspec(noinline) inline || __forceinline
+
+QCS_INLINE auto qcstudio::base_tx_queue_t::is_ok() const -> bool {
     return storage_ != nullptr;
 }
 
-__forceinline auto qcstudio::base_tx_queue_t::capacity() const -> uint64_t {
+QCS_INLINE auto qcstudio::base_tx_queue_t::capacity() const -> uint64_t {
     return capacity_ - 1;
 }
 
-__forceinline qcstudio::base_tx_queue_t::operator bool() const noexcept {
+QCS_INLINE qcstudio::base_tx_queue_t::operator bool() const noexcept {
     return is_ok();
 }
 
@@ -24,7 +28,7 @@ __forceinline qcstudio::base_tx_queue_t::operator bool() const noexcept {
     ==
 */
 
-__forceinline qcstudio::tx_queue_sp_t::tx_queue_sp_t(uint64_t _capacity) {
+QCS_INLINE qcstudio::tx_queue_sp_t::tx_queue_sp_t(uint64_t _capacity) {
     // basic checks
 
     if (_capacity < CACHE_LINE_SIZE) {
@@ -57,7 +61,7 @@ __forceinline qcstudio::tx_queue_sp_t::tx_queue_sp_t(uint64_t _capacity) {
 #endif
 }
 
-__forceinline qcstudio::tx_queue_sp_t::~tx_queue_sp_t() {
+QCS_INLINE qcstudio::tx_queue_sp_t::~tx_queue_sp_t() {
     if (storage_) {
 #if _WIN32
         _aligned_free(storage_);
@@ -73,7 +77,7 @@ __forceinline qcstudio::tx_queue_sp_t::~tx_queue_sp_t() {
     ==
 */
 
-__forceinline qcstudio::tx_queue_mp_t::tx_queue_mp_t(uint8_t* _prealloc_and_init, uint64_t _capacity) : status_(*new(_prealloc_and_init) tx_queue_status_t) {
+QCS_INLINE qcstudio::tx_queue_mp_t::tx_queue_mp_t(uint8_t* _prealloc_and_init, uint64_t _capacity) : status_(*new(_prealloc_and_init) tx_queue_status_t) {
     // basic checks
 
     if (!_prealloc_and_init) {
@@ -109,7 +113,7 @@ __forceinline qcstudio::tx_queue_mp_t::tx_queue_mp_t(uint8_t* _prealloc_and_init
 */
 
 template<typename QTYPE>
-__forceinline qcstudio::tx_write_t<QTYPE>::tx_write_t(QTYPE& _queue) : queue_(_queue) {
+QCS_INLINE qcstudio::tx_write_t<QTYPE>::tx_write_t(QTYPE& _queue) : queue_(_queue) {
     storage_     = queue_.storage_;
     tail_        = atomic_ref<uint64_t>(queue_.status_.tail_).load(memory_order_relaxed);  // relaxed => no sync required as the tail is only modified by the producer (us)
     cached_head_ = atomic_ref<uint64_t>(queue_.status_.head_).load(memory_order_relaxed);  // optimistic guess, "gimme whatever you have". Later we'll sync if required!
@@ -118,18 +122,18 @@ __forceinline qcstudio::tx_write_t<QTYPE>::tx_write_t(QTYPE& _queue) : queue_(_q
 }
 
 template<typename QTYPE>
-__forceinline qcstudio::tx_write_t<QTYPE>::operator bool() const noexcept {
+QCS_INLINE qcstudio::tx_write_t<QTYPE>::operator bool() const noexcept {
     return !invalidated_;
 }
 
 template<typename QTYPE>
-__forceinline auto qcstudio::tx_write_t<QTYPE>::write(const void* _buffer, uint64_t _size) -> bool {
+QCS_INLINE auto qcstudio::tx_write_t<QTYPE>::write(const void* _buffer, uint64_t _size) -> bool {
     return imp_write(_buffer, _size);
 }
 
 template<typename QTYPE>
 template<typename T>
-__forceinline auto qcstudio::tx_write_t<QTYPE>::write(const T& _item) -> bool {
+QCS_INLINE auto qcstudio::tx_write_t<QTYPE>::write(const T& _item) -> bool {
     if constexpr (is_same_v<T, string>) {
         return imp_write(_item.data(), _item.length());
     } else {
@@ -139,7 +143,7 @@ __forceinline auto qcstudio::tx_write_t<QTYPE>::write(const T& _item) -> bool {
 
 template<typename QTYPE>
 template<typename T, uint64_t N>
-__forceinline auto qcstudio::tx_write_t<QTYPE>::write(const T (&_array)[N]) -> bool {
+QCS_INLINE auto qcstudio::tx_write_t<QTYPE>::write(const T (&_array)[N]) -> bool {
     if constexpr (is_same_v<T, char> || is_same_v<T, wchar_t>) {
         return N > 1 && imp_write(&_array[0], (N - 1) * sizeof(T));  // no "\0" included
     } else {
@@ -149,7 +153,7 @@ __forceinline auto qcstudio::tx_write_t<QTYPE>::write(const T (&_array)[N]) -> b
 
 template<typename QTYPE>
 template<typename FIRST, typename... REST>
-__forceinline auto qcstudio::tx_write_t<QTYPE>::write(const FIRST& _first, REST... _rest) -> enable_if_t<!is_pointer_v<FIRST>, bool> {
+QCS_INLINE auto qcstudio::tx_write_t<QTYPE>::write(const FIRST& _first, REST... _rest) -> enable_if_t<!is_pointer_v<FIRST>, bool> {
     if (!write(_first)) {
         return false;
     }
@@ -157,7 +161,7 @@ __forceinline auto qcstudio::tx_write_t<QTYPE>::write(const FIRST& _first, REST.
 }
 
 template<typename QTYPE>
-__forceinline auto qcstudio::tx_write_t<QTYPE>::imp_write(const void* _buffer, uint64_t _size) -> bool {
+QCS_INLINE auto qcstudio::tx_write_t<QTYPE>::imp_write(const void* _buffer, uint64_t _size) -> bool {
     if (invalidated_) {
         return false;
     }
@@ -170,6 +174,16 @@ __forceinline auto qcstudio::tx_write_t<QTYPE>::imp_write(const void* _buffer, u
         cached_head_    = atomic_ref<uint64_t>(queue_.status_.head_).load(memory_order_acquire);
         available_space = (cached_head_ - tail_ - 1 + capacity_) & (capacity_ - 1);
         if (_size > available_space) {
+            auto current_core = (int)GetCurrentProcessorNumber();
+            atomic_ref<int32_t>(queue_.status_.producer_core_).store(current_core, memory_order_relaxed);
+
+            // yield if consumer is in the same cpu
+
+            int consumer_core = atomic_ref<int32_t>(queue_.status_.consumer_core_).load(memory_order_relaxed);
+            if (consumer_core != -1 && consumer_core == current_core) {
+                this_thread::yield();
+            }
+
             invalidated_ = true;
             return false;
         }
@@ -180,25 +194,32 @@ __forceinline auto qcstudio::tx_write_t<QTYPE>::imp_write(const void* _buffer, u
 
     if ((tail_ + _size) > capacity_) {
         const auto first_chunk_size = capacity_ - tail_;
-        CPY(storage_ + tail_, _buffer, /*                        */ first_chunk_size);
-        CPY(storage_, /*   */ (uint8_t*)_buffer + first_chunk_size, _size - first_chunk_size);
+        memcpy(storage_ + tail_, _buffer, /*                        */ first_chunk_size);
+        memcpy(storage_, /*   */ (uint8_t*)_buffer + first_chunk_size, _size - first_chunk_size);
     } else {
-        CPY(storage_ + tail_, _buffer, _size);
+        memcpy(storage_ + tail_, _buffer, _size);
     }
 
     // update the tail properly
 
     tail_ = (tail_ + _size) & (capacity_ - 1);
+
+    // reset producer_core_ to -1 only if it was previously set (i.e., not -1)
+
+    if (auto prev_core = atomic_ref<int32_t>(queue_.status_.producer_core_).load(memory_order_relaxed); prev_core != -1) {
+        atomic_ref<int32_t>(queue_.status_.producer_core_).store(-1, memory_order_relaxed);
+    }
+
     return true;
 }
 
 template<typename QTYPE>
-__forceinline void qcstudio::tx_write_t<QTYPE>::invalidate() {
+QCS_INLINE void qcstudio::tx_write_t<QTYPE>::invalidate() {
     invalidated_ = true;
 }
 
 template<typename QTYPE>
-__forceinline qcstudio::tx_write_t<QTYPE>::~tx_write_t() {
+QCS_INLINE qcstudio::tx_write_t<QTYPE>::~tx_write_t() {
     if (!invalidated_) {
         atomic_ref<uint64_t>(queue_.status_.tail_).store(tail_, memory_order_release);  // TODO: check how to deal with this in IPC we need to use https://learn.microsoft.com/en-us/windows/win32/sync/interlocked-variable-access
     }
@@ -211,7 +232,7 @@ __forceinline qcstudio::tx_write_t<QTYPE>::~tx_write_t() {
 */
 
 template<typename QTYPE>
-__forceinline qcstudio::tx_read_t<QTYPE>::tx_read_t(QTYPE& _queue) : queue_(_queue) {
+QCS_INLINE qcstudio::tx_read_t<QTYPE>::tx_read_t(QTYPE& _queue) : queue_(_queue) {
     storage_     = queue_.storage_;
     head_        = atomic_ref<uint64_t>(queue_.status_.head_).load(memory_order_relaxed);  // relaxed => no sync required as the head is only modified by the consumer (us)
     cached_tail_ = atomic_ref<uint64_t>(queue_.status_.tail_).load(memory_order_relaxed);  // optimistic guess, "gimme whatever you have". Later we'll sync if required!
@@ -220,18 +241,18 @@ __forceinline qcstudio::tx_read_t<QTYPE>::tx_read_t(QTYPE& _queue) : queue_(_que
 }
 
 template<typename QTYPE>
-__forceinline qcstudio::tx_read_t<QTYPE>::operator bool() const noexcept {
+QCS_INLINE qcstudio::tx_read_t<QTYPE>::operator bool() const noexcept {
     return !invalidated_;
 }
 
 template<typename QTYPE>
-__forceinline auto qcstudio::tx_read_t<QTYPE>::read(void* _buffer, uint64_t _size) -> bool {
+QCS_INLINE auto qcstudio::tx_read_t<QTYPE>::read(void* _buffer, uint64_t _size) -> bool {
     return imp_read(_buffer, _size);
 }
 
 template<typename QTYPE>
 template<typename T>
-__forceinline auto qcstudio::tx_read_t<QTYPE>::read(T& _item) -> bool {
+QCS_INLINE auto qcstudio::tx_read_t<QTYPE>::read(T& _item) -> bool {
     return imp_read(&_item, sizeof(T));
 }
 
@@ -239,7 +260,7 @@ __forceinline auto qcstudio::tx_read_t<QTYPE>::read(T& _item) -> bool {
 
 template<typename QTYPE>
 template<typename... ARGS>
-__forceinline auto qcstudio::tx_read_t<QTYPE>::read() -> enable_if_t<conjunction_v<is_default_constructible<ARGS>...>, tuple<ARGS...>> {
+QCS_INLINE auto qcstudio::tx_read_t<QTYPE>::read() -> enable_if_t<conjunction_v<is_default_constructible<ARGS>...>, tuple<ARGS...>> {
     if constexpr (sizeof...(ARGS) > 0) {
         auto temp = tuple<ARGS...>{};
         if (auto all_read = apply([this](auto&&... _args) { return (this->read(_args) && ...); }, temp)) {
@@ -250,7 +271,7 @@ __forceinline auto qcstudio::tx_read_t<QTYPE>::read() -> enable_if_t<conjunction
 }
 
 template<typename QTYPE>
-__forceinline auto qcstudio::tx_read_t<QTYPE>::imp_read(void* _buffer, uint64_t _size) -> bool {
+QCS_INLINE auto qcstudio::tx_read_t<QTYPE>::imp_read(void* _buffer, uint64_t _size) -> bool {
     if (invalidated_) {
         return false;
     }
@@ -263,6 +284,16 @@ __forceinline auto qcstudio::tx_read_t<QTYPE>::imp_read(void* _buffer, uint64_t 
         cached_tail_   = atomic_ref<uint64_t>(queue_.status_.tail_).load(memory_order_acquire);
         available_data = (cached_tail_ - head_ + capacity_) & (capacity_ - 1);
         if (_size > available_data) {
+            auto current_core = (int)GetCurrentProcessorNumber();
+            atomic_ref<int32_t>(queue_.status_.consumer_core_).store(current_core, memory_order_relaxed);
+
+            // yield if producer is in the same cpu
+
+            int producer_core = atomic_ref<int32_t>(queue_.status_.producer_core_).load(memory_order_relaxed);
+            if (producer_core != -1 && producer_core == current_core) {
+                this_thread::yield();
+            }
+
             invalidated_ = true;
             return false;
         }
@@ -273,26 +304,35 @@ __forceinline auto qcstudio::tx_read_t<QTYPE>::imp_read(void* _buffer, uint64_t 
 
     if ((head_ + _size) > capacity_) {
         const auto first_chunk_size = capacity_ - head_;
-        CPY(_buffer, /*                        */ storage_ + head_, first_chunk_size);
-        CPY((uint8_t*)_buffer + first_chunk_size, storage_, /*   */ _size - first_chunk_size);
+        memcpy(_buffer, /*                        */ storage_ + head_, first_chunk_size);
+        memcpy((uint8_t*)_buffer + first_chunk_size, storage_, /*   */ _size - first_chunk_size);
     } else {
-        CPY(_buffer, storage_ + head_, _size);
+        memcpy(_buffer, storage_ + head_, _size);
     }
 
     // update the tail properly
 
     head_ = (head_ + _size) & (capacity_ - 1);
+
+    // reset producer_core_ to -1 only if it was previously set (i.e., not -1)
+
+    if (auto prev_core = atomic_ref<int32_t>(queue_.status_.consumer_core_).load(memory_order_relaxed); prev_core != -1) {
+        atomic_ref<int32_t>(queue_.status_.consumer_core_).store(-1, memory_order_relaxed);
+    }
+
     return true;
 }
 
 template<typename QTYPE>
-__forceinline void qcstudio::tx_read_t<QTYPE>::invalidate() {
+QCS_INLINE void qcstudio::tx_read_t<QTYPE>::invalidate() {
     invalidated_ = true;
 }
 
 template<typename QTYPE>
-__forceinline qcstudio::tx_read_t<QTYPE>::~tx_read_t() {
+QCS_INLINE qcstudio::tx_read_t<QTYPE>::~tx_read_t() {
     if (!invalidated_) {
         atomic_ref<uint64_t>(queue_.status_.head_).store(head_, memory_order_release);  // TODO: check how to deal with this in IPC we need to use https://learn.microsoft.com/en-us/windows/win32/sync/interlocked-variable-access
     }
 }
+
+#pragma pop_macro("QCS_INLINE")

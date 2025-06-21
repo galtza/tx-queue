@@ -1,4 +1,6 @@
-﻿/*
+﻿// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
+/*
     ======
     "base"
     ======
@@ -35,24 +37,24 @@ void qcstudio::utest_job<QUEUE_TYPE, VERIFICATION>::set_start_time(high_resoluti
 }
 
 template<typename QUEUE_TYPE, qcstudio::everification VERIFICATION>
-auto qcstudio::utest_job<QUEUE_TYPE, VERIFICATION>::get_duration_ns() -> int64_t {
+auto qcstudio::utest_job<QUEUE_TYPE, VERIFICATION>::get_total_duration_ns() const -> int64_t {
     return std::chrono::duration_cast<std::chrono::nanoseconds>(total_time_).count();
 }
 
 template<typename QUEUE_TYPE, qcstudio::everification VERIFICATION>
-auto qcstudio::utest_job<QUEUE_TYPE, VERIFICATION>::get_total_data() -> uint64_t {
+auto qcstudio::utest_job<QUEUE_TYPE, VERIFICATION>::get_total_data() const -> uint64_t {
     return total_data_;
 }
 
 template<typename QUEUE_TYPE, qcstudio::everification VERIFICATION>
-auto qcstudio::utest_job<QUEUE_TYPE, VERIFICATION>::get_transaction_attempts() -> uint64_t {
+auto qcstudio::utest_job<QUEUE_TYPE, VERIFICATION>::get_transaction_attempts() const -> uint64_t {
     return transaction_attempts_;
 }
 
 template<typename QUEUE_TYPE, qcstudio::everification VERIFICATION>
-auto qcstudio::utest_job<QUEUE_TYPE, VERIFICATION>::get_hash_str() -> string {
+auto qcstudio::utest_job<QUEUE_TYPE, VERIFICATION>::get_hash_str() const -> string {
     if constexpr (VERIFICATION == CHECKSUM) {
-        qcstudio::checksum::to_string(qcstudio::checksum::to_digest(checksum_hash_status_));
+        return qcstudio::checksum::to_string(qcstudio::checksum::to_digest(checksum_hash_status_));
     } else if constexpr (VERIFICATION == SHA256) {
         return qcstudio::sha256::to_string(qcstudio::sha256::to_digest(sha256_hash_status_));
     }
@@ -77,7 +79,7 @@ void qcstudio::utest_job_transmit_buffer<QUEUE_TYPE, VERIFICATION>::set_data(con
 }
 
 template<typename QUEUE_TYPE, qcstudio::everification VERIFICATION>
-void qcstudio::utest_job_transmit_buffer<QUEUE_TYPE, VERIFICATION>::set_minmax_chunk_size(int _min_chunk_size, int _max_chunk_size) {
+void qcstudio::utest_job_transmit_buffer<QUEUE_TYPE, VERIFICATION>::set_minmax_chunk_size(uint64_t _min_chunk_size, uint64_t _max_chunk_size) {
     min_chunk_size_ = _min_chunk_size;
     max_chunk_size_ = _max_chunk_size;
 }
@@ -91,8 +93,7 @@ void qcstudio::utest_job_transmit_buffer<QUEUE_TYPE, VERIFICATION>::run() {
 
     auto rd             = random_device{};
     auto gen            = mt19937(rd());
-    auto dis_chunk_size = uniform_int_distribution<>(min_chunk_size_, max_chunk_size_);
-    auto dis_byte       = uniform_int_distribution<>(0, 255);
+    auto dis_chunk_size = uniform_int_distribution<uint64_t>(min_chunk_size_, max_chunk_size_);
 
     // synchronize the starting of the actual job
 

@@ -1,3 +1,5 @@
+// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
 #pragma once
 
 // C++
@@ -184,7 +186,7 @@ auto format_duration(int64_t _ns) -> std::string {
     }
 
     if (ns.count() > 0) {
-        result << (added ? ", " : "") << ns.count() << " n";
+        result << (added ? ", " : "") << ns.count() << " ns";
     }
 
     if (!added) {

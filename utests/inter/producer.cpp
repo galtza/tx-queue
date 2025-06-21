@@ -1,3 +1,5 @@
+// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+
 // QCStudio
 
 #include "shared-memory.h"
@@ -21,17 +23,17 @@ namespace {
 
 // constants
 
-constexpr auto k_max_chunk_size = (uint64_t)2_KiB;  // pass by param
-constexpr auto k_sample_size    = (uint64_t)5_MiB;
-constexpr auto k_queue_size     = (uint64_t)8_KiB;
+constexpr auto k_sample_size    = (uint64_t)1_GiB;
+constexpr auto k_queue_size     = (uint64_t)16_KiB;
+constexpr auto k_max_chunk_size = (uint64_t)8_KiB;
 
 // global data
 
 auto main(int _argc, const char* _argv[]) -> int {
     // construct the shared memory object
 
-    constexpr auto share_memory_size = sizeof(qcstudio::tx_queue_status_t) + k_queue_size;
-    auto           shared_memory     = qcstudio::shared_memory(L"7d6c10f2740141fa83246ab214618c6d", share_memory_size);
+    auto share_memory_size = sizeof(qcstudio::tx_queue_status_t) + k_queue_size;
+    auto shared_memory     = qcstudio::shared_memory(L"7d6c10f2740141fa83246ab214618c6d", share_memory_size);
 
     // construct the queue directly on the shared memory (It should cover 3 cache lines; 64 * 3 = 192)
 
@@ -121,12 +123,13 @@ namespace {
         }
 
         cout << "\n== Stats...\n\n";
-        cout << "    producer throughput: " << format_throughput(producer_job.get_total_data(), producer_job.get_duration_ns()) << "\n\n";
-        cout << "      producer duration: " << format_duration(producer_job.get_duration_ns()) << "\n";
-        cout << "       data sample size: " << format_size(producer_job.get_total_data()) << "\n";
-        cout << "         queue capacity: " << format_size(_queue.capacity()) << "\n";
-        cout << "         max chunk size: " << format_size(k_max_chunk_size) << "\n\n";
-        cout << "    # write re-attempts: " << dec << producer_job.get_transaction_attempts() << "\n";
+        cout << " producer total throughput: " << format_throughput(producer_job.get_total_data(), producer_job.get_total_duration_ns()) << "\n\n";
+        cout << "         producer duration: " << format_duration(producer_job.get_total_duration_ns()) << "\n";
+        cout << "          data sample size: " << format_size(producer_job.get_total_data()) << "\n";
+        cout << "            queue capacity: " << format_size(_queue.capacity()) << "\n";
+        cout << "            max chunk size: " << format_size(k_max_chunk_size) << "\n\n";
+        cout << "       # write re-attempts: " << dec << producer_job.get_transaction_attempts() << "\n\n";
+
         cout << endl;
 
         return 0;

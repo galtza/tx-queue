@@ -1,4 +1,4 @@
-// Copyright © 2017-2025 Raúl Ramos García. All rights reserved.
+// Copyright Â© 2017-2025 RaÃºl Ramos GarcÃ­a. All rights reserved.
 
 namespace qcstudio {
 
